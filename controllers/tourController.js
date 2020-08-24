@@ -1,5 +1,5 @@
 const Tour = require('../models/tourModel');
-const { query } = require('express');
+// const { query } = require('express');
 
 exports.getAllTours = async (req, res) => {
     try {
@@ -27,15 +27,23 @@ exports.getAllTours = async (req, res) => {
             query = query.sort('-createdAt');
         }
 
+        // 3) Field limiting
+        if(req.query.fields) {
+            const fields = req.query.fields.split(',').join(' ');
+            query = query.select(fields);
+        } else {
+            query = query.select('-__v');
+        }
+
+        // Execute query
+        const tours = await query;
+
         // const query = Tour.find()
         // .where('duration')
         // .equals(5)
         // .where('difficulty')
         // .equals('easy');
-
-        //execute query
-        const tours = await query;
-
+        
         res.status(200).json({
             status: 'success',
             results: tours.length,
