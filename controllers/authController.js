@@ -1,8 +1,9 @@
+const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
-const bcrypt = require('bcryptjs');
+
 
 const signToken = id => {
     return jwt.sign(
@@ -35,16 +36,16 @@ exports.login = catchAsync(async (req, res, next) => {
     const { email, password } = req.body;
 
     // 1) if email and password exist
-    if(!email || !password) {
+    if (!email || !password) {
         return next(new AppError('Bad email or password provided!', 400));
     }
 
     // 2) if user exists and password correct
     const user = await User.findOne({ email }).select('password');
 
-    if(!user || !(await user.correctPassword(password, user.password))) {
+    if (!user || !(await user.correctPassword(password, user.password))) {
         return next(new AppError('Incorrect email or password!', 401));
-    } 
+    }
 
     // 3) if everything is Ok, send token to the client
     const token = signToken(user._id);
@@ -53,4 +54,28 @@ exports.login = catchAsync(async (req, res, next) => {
         status: 'success',
         token
     });
+});
+
+exports.protect = catchAsync(async (req, res, next) => {
+    // 1) Getting a token and check if it exists
+    let token;
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        token = req.headers.authorization.split(' ')[1];
+    }
+
+    console.log(token);
+
+    if (!token) {
+        return next(new AppError(`You are not logged in! Please log in to get access!`, 401));
+    }
+
+    // 2) Verify a token
+    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+
+    console.log(decoded);
+
+    // 3) Check if user still exist
+
+    // 4) Check if user changed password after jwt was issued
+    next();
 });
