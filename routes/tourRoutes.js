@@ -22,21 +22,29 @@ router
 
 router
     .route('/monthly-plan/:year')
-    .get(tourController.getMonthlyPlan);
+    .get(
+        authController.protect,
+        authController.restrictTo('admin', 'lead-guide', 'guide'),
+        tourController.getMonthlyPlan
+    );
 
 router
     .route('/')
-    .get(
+    .get(tourController.getAllTours)
+    .post(
         authController.protect,
-        tourController.getAllTours
-    )
-    // .get(tourController.getAllTours)
-    .post(tourController.createTour);
+        authController.restrictTo('admin', 'lead-guide'),
+        tourController.createTour
+    );
 
 router
     .route('/:id')
     .get(tourController.getTour)
-    .patch(tourController.updateTour)
+    .patch(
+        authController.protect,
+        authController.restrictTo('admin', 'lead-guide'),
+        tourController.updateTour
+    )
     .delete(
         authController.protect,
         authController.restrictTo('admin', 'lead-guide'),
