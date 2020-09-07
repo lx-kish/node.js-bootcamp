@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
@@ -14,7 +15,14 @@ const reviewRouter = require('./routes/reviewRoutes');
 
 const app = express();
 
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, './views'));
+
 // GLOBAL MIDDLEWARES
+
+// Serving static files
+// app.use(express.static(`${__dirname}/public`));
+app.use(express.static(path.join(__dirname, 'public')));
 
 //SEt security HTTP headers
 app.use(helmet());
@@ -46,9 +54,6 @@ app.use(hpp({
     whitelist: ['duration']
 }));
 
-// Serving static files
-app.use(express.static(`${__dirname}/public`));
-
 // Test middleware
 app.use((req, res, next) => {
     req.requestTime = new Date().toISOString();
@@ -57,6 +62,24 @@ app.use((req, res, next) => {
 });
 
 //ROUTES
+app.get('/', (req, res) => {
+    res.status(200).render('base', {
+        tour: 'The Forest Hicker',
+        user: 'Jonas'
+    });
+});
+
+app.get('/overview', (req, res) => {
+    res.status(200).render('overview', {
+        title: 'All Tours'
+    });
+});
+
+app.get('/tour', (req, res) => {
+    res.status(200).render('tour', {
+        title: 'The Forest Hiker Tour'
+    });
+});
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
