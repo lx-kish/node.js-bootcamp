@@ -30,33 +30,59 @@ const handleJWTError = () => new AppError('Invalid token. Please log in again', 
 
 const handleJWTExpiredError = () => new AppError('Your token has expered. Please log in agait.', 401);
 
-const sendErrorDev = (err, res) => {
-    res.status(err.statusCode).json({
-        status: err.status,
-        error: err,
-        message: err.message,
-        stack: err.stack
+const sendErrorDev = (err, req, res) => {
+    if (req.originalUrl.startsWith('/api')) {
+        // API
+        return res.status(err.statusCode).json({
+            status: err.status,
+            error: err,
+            message: err.message,
+            stack: err.stack
+        });
+    }
+    // RENDERED WEBSITE
+    console.error('🔥 error %o', err);
+    return res.status(err.statusCode).render('error', {
+        title: 'Something went wrong!',
+        msg: err.message
     });
 };
 
-const sendErrorProd = (err, res) => {
-    if (err.isOperational) {
-        // Operational, trusted errors, can be sent to the client
-        res.status(err.statusCode).json({
-            status: err.status,
-            message: err.message
-        });
-    } else {
+const sendErrorProd = (err, req, res) => {
+    if (req.originalUrl.startsWith('/api')) {
+        // API
+        if (err.isOperational) {
+            // Operational, trusted errors, can be sent to the client
+            return res.status(err.statusCode).json({
+                status: err.status,
+                message: err.message
+            });
+        }
         // Weird programming and third party software errors, do not send to the client
         // 1) log the error
         console.error('🔥 error %o', err);
 
         // 2) send the generic error to the client
-        res.status(500).json({
+        return res.status(500).json({
             status: 'error',
             message: 'Something went very wrong!'
         });
     }
+    // RENDERED WEBSITE
+    if (err.isOperational) {
+        return res.status(err.statusCode).render('error', {
+            title: 'Something went wrong!',
+            msg: err.message
+        });
+    }
+    // Weird programming and third party software errors, do not send to the client
+    // 1) log the error
+    console.error('🔥 error %o', err);
+
+    return res.status(err.statusCode).render('error', {
+        title: 'Something went wrong!',
+        msg: 'Please, try again later.'
+    });
 }
 
 module.exports = (err, req, res, next) => {
@@ -68,10 +94,11 @@ module.exports = (err, req, res, next) => {
     // console.log('inside errorController process.env.NODE_ENV = ', process.env.NODE_ENV);
 
     if (process.env.NODE_ENV === 'development') {
-        sendErrorDev(err, res);
+        sendErrorDev(err, req, res);
 
     } else if (process.env.NODE_ENV === 'production') {
         let error = { ...err };
+        error.message = err.message;
 
         if (error.name === 'CastError') error = handleCastErrorDB(error);
         if (error.code === 11000) error = handleDuplicateFieldsDB(error);
@@ -79,6 +106,6 @@ module.exports = (err, req, res, next) => {
         if (error.name === 'JsonWebTokenError') error = handleJWTError();
         if (error.name === 'TokenExpiredError') error = handleJWTExpiredError();
 
-        sendErrorProd(error, res);
+        sendErrorProd(error, req, res);
     }
 }
