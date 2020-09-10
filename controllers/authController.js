@@ -26,10 +26,10 @@ const createSendToken = (user, statusCode, res) => {
     };
     if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
 
+    res.cookie('jwt', token, cookieOptions);
+
     // removes password from the output
     user.password = undefined;
-
-    res.cookie('jwt', token, cookieOptions);
 
     res.status(statusCode).json({
         status: 'success',
@@ -106,6 +106,7 @@ exports.protect = catchAsync(async (req, res, next) => {
 
     // Grant access to protected route
     req.user = currentUser;
+    res.locals.user = currentUser;
     next();
 });
 
