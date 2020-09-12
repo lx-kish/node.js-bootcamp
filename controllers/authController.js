@@ -55,6 +55,8 @@ exports.signup = catchAsync(async (req, res, next) => {
 exports.login = catchAsync(async (req, res, next) => {
     const { email, password } = req.body;
 
+    console.log('req.body from authController.login ===> ', req.body);
+
     // 1) if email and password exist
     if (!email || !password) {
         return next(new AppError('Bad email or password provided!', 400));

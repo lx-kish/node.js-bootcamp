@@ -54,14 +54,14 @@ if (mapBox) {
       right: 100
     }
   });
-  // }
 }
 
 //LOGIN SECTION
-const loginForm = document.querySelector('.form');
+const loginForm = document.querySelector('.form--login');
 
 const login = async (email, password) => {
   // export const login = async (email, password) => {
+  // console.log('from login client-side handler ===> ');
   try {
     const res = await axios({
       method: 'POST',
@@ -71,10 +71,12 @@ const login = async (email, password) => {
         password
       }
     });
-    
+
+    // console.log('res from server ===> ', res);
+
     if (res.data.status === 'success') {
       showAlert('success', 'Logged in successfully!');
-      console.log(res);
+      // console.log(res);
       window.setTimeout(() => {
         location.assign('/');
       }, 1500);
@@ -107,8 +109,8 @@ const logout = async () => {
     });
     console.log('from logout btn ===> ')
 
-    if(res.data.status === 'success') location.reload(true);
-  } catch(err) {
+    if (res.data.status === 'success') location.reload(true);
+  } catch (err) {
     console.log(err);
     showAlert('error', 'Error logging out, try again!')
   }
@@ -116,6 +118,67 @@ const logout = async () => {
 
 if (logOutBtn) {
   logOutBtn.addEventListener('click', logout);
+}
+
+//SAVE SETTINGS SECTION
+const userDataForm = document.querySelector('.form-user-data');
+const userSettingsForm = document.querySelector('.form-user-settings');
+
+//type is either 'password' or 'data'
+const updateUserData = async (data, type) => {
+  // export const login = async (email, password) => {
+  console.log('from updateUserData client-side handler ===> ');
+  try {
+    const url = type === 'password'
+      ? `http://localhost:5050/api/v1/users/updatePassword`
+      : `http://localhost:5050/api/v1/users/updateMe`;
+
+      console.log('url from updateUserData client-side handler ===> ', url);
+
+    const res = await axios({
+      method: 'PATCH',
+      url,
+      data
+    });
+
+    if (res.data.status === 'success') {
+      showAlert('success', `${type.toUpperCase()} updated successfully!`);
+      // console.log(res);
+      location.reload(true);
+    }
+
+  } catch (err) {
+    showAlert('error', err.response.data.message);
+  }
+};
+
+if (userDataForm) {
+  userDataForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+
+    updateUserData({name, email}, 'data');
+  });
+}
+
+if (userSettingsForm) {
+  userSettingsForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    document.querySelector('.btn--save-password').textContent = 'Updating...';
+    
+    const passwordCurrent = document.getElementById('password-current').value;
+    const password = document.getElementById('password').value;
+    const passwordConfirm = document.getElementById('password-confirm').value;
+    
+    await updateUserData({passwordCurrent, password, passwordConfirm}, 'password');
+    
+    document.querySelector('.btn--save-password').textContent = 'Save password';
+
+    document.getElementById('password-current').value = '';
+    document.getElementById('password').value = '';
+    document.getElementById('password-confirm').value = '';
+  });
 }
 
 //ALERT SECTION
