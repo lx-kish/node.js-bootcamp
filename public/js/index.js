@@ -155,10 +155,19 @@ const updateUserData = async (data, type) => {
 if (userDataForm) {
   userDataForm.addEventListener('submit', e => {
     e.preventDefault();
-    const name = document.getElementById('name').value;
-    const email = document.getElementById('email').value;
+    // BEFORE ADDING SENDING PHOTO (OR ANY FILE)
+    // const name = document.getElementById('name').value;
+    // const email = document.getElementById('email').value;
+    // updateUserData({name, email}, 'data');
 
-    updateUserData({name, email}, 'data');
+    // AFTER ADDING SENDING PHOTO 
+    const form = new FormData();
+    form.append('name', document.getElementById('name').value);
+    form.append('email', document.getElementById('email').value);
+    form.append('photo', document.getElementById('photo').files[0]);
+    console.log('form-data object from sending form handler ===> ', form);
+
+    updateUserData(form, 'data');
   });
 }
 
