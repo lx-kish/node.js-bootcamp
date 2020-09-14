@@ -1,9 +1,10 @@
 /* eslint-disable */
 
+//MAPBOX SECTION
+
 //DOM elements
 const mapBox = document.getElementById('map');
 
-//MAPBOX SECTION
 let locations;
 if (mapBox) {
   locations = JSON.parse(mapBox.dataset.locations);
@@ -133,7 +134,7 @@ const updateUserData = async (data, type) => {
       ? `http://localhost:5050/api/v1/users/updatePassword`
       : `http://localhost:5050/api/v1/users/updateMe`;
 
-      console.log('url from updateUserData client-side handler ===> ', url);
+    console.log('url from updateUserData client-side handler ===> ', url);
 
     const res = await axios({
       method: 'PATCH',
@@ -175,13 +176,13 @@ if (userSettingsForm) {
   userSettingsForm.addEventListener('submit', async e => {
     e.preventDefault();
     document.querySelector('.btn--save-password').textContent = 'Updating...';
-    
+
     const passwordCurrent = document.getElementById('password-current').value;
     const password = document.getElementById('password').value;
     const passwordConfirm = document.getElementById('password-confirm').value;
-    
-    await updateUserData({passwordCurrent, password, passwordConfirm}, 'password');
-    
+
+    await updateUserData({ passwordCurrent, password, passwordConfirm }, 'password');
+
     document.querySelector('.btn--save-password').textContent = 'Save password';
 
     document.getElementById('password-current').value = '';
@@ -203,3 +204,37 @@ const showAlert = (type, msg) => {
   document.querySelector('body').insertAdjacentHTML('afterbegin', markup);
   window.setTimeout(hideAlert, 5000);
 };
+
+// PAYMENT SECTION
+const stripe = Stripe('pk_test_51HR5N6DzgybG5RjQ2306mDQTCG60SFwiWogwlM8efdl20KIVamLQw0koFePZnhed05zpUgam2xJ2EBC3vAP3dt7z00ihpWlRL2');
+
+const bookTour = async tourId => {
+  try {
+    // 1) Get checkout session from API endpoint
+    const session = await axios(
+      `http://localhost:5050/api/v1/bookings/checkout-session/${tourId}`
+    );
+    console.log(session);
+    // 2) Create checkout form  + charge credit card
+    await stripe.redirectToCheckout({
+      sessionId: session.data.session.id
+    });
+
+  } catch (err) {
+    console.log('error from bookTour of index.js ===> ', err);
+    showAlert('error', err);
+  }
+};
+
+const bookBtn = document.getElementById('book-tour');
+
+if(bookBtn) {
+  bookBtn.addEventListener('click', async e => {
+    e.target.textContent = 'Processing...';
+
+    const { tourId } = e.target.dataset;
+    bookTour(tourId);
+
+    e.target.textContent = 'Book tour now!';
+  });
+}
