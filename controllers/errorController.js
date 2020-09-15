@@ -10,7 +10,6 @@ const handleDuplicateFieldsDB = err => {
     let message;
     if (err.errmsg) {
         const value = err.errmsg.match(/(["'])(\\?.)*?\1/)[0];
-        // console.log(value);
 
         message = `Duplicate field value: ${value}. Please use another value!`;
     } else {
@@ -86,12 +85,9 @@ const sendErrorProd = (err, req, res) => {
 }
 
 module.exports = (err, req, res, next) => {
-    // console.log(err.stack);
 
     err.statusCode = err.statusCode || 500;
     err.status = err.status || 'error';
-
-    // console.log('inside errorController process.env.NODE_ENV = ', process.env.NODE_ENV);
 
     if (process.env.NODE_ENV === 'development') {
         sendErrorDev(err, req, res);

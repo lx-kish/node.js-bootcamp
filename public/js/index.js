@@ -9,7 +9,6 @@ let locations;
 if (mapBox) {
   locations = JSON.parse(mapBox.dataset.locations);
   // displayMap(locations);
-  console.log(locations);
 
   mapboxgl.accessToken = 'pk.eyJ1IjoibHhuZGEiLCJhIjoiY2tldDh0Zzl1MWN2OTJwdDg5cnhhcTN2OCJ9.pe7wjLc6ZXMDT4rWHTgYCg';
   var map = new mapboxgl.Map({
@@ -62,22 +61,20 @@ const loginForm = document.querySelector('.form--login');
 
 const login = async (email, password) => {
   // export const login = async (email, password) => {
-  // console.log('from login client-side handler ===> ');
+
   try {
     const res = await axios({
       method: 'POST',
-      url: 'http://localhost:5050/api/v1/users/login',
+      url: '/api/v1/users/login',
       data: {
         email,
         password
       }
     });
 
-    // console.log('res from server ===> ', res);
-
     if (res.data.status === 'success') {
       showAlert('success', 'Logged in successfully!');
-      // console.log(res);
+
       window.setTimeout(() => {
         location.assign('/');
       }, 1500);
@@ -106,13 +103,12 @@ const logout = async () => {
   try {
     const res = await axios({
       method: 'GET',
-      url: 'http://localhost:5050/api/v1/users/logout'
+      url: '/api/v1/users/logout'
     });
-    console.log('from logout btn ===> ')
 
     if (res.data.status === 'success') location.reload(true);
   } catch (err) {
-    console.log(err);
+    console.log('error from logout of index.js ===> ', err);
     showAlert('error', 'Error logging out, try again!')
   }
 };
@@ -128,13 +124,10 @@ const userSettingsForm = document.querySelector('.form-user-settings');
 //type is either 'password' or 'data'
 const updateUserData = async (data, type) => {
   // export const login = async (email, password) => {
-  console.log('from updateUserData client-side handler ===> ');
   try {
     const url = type === 'password'
-      ? `http://localhost:5050/api/v1/users/updatePassword`
-      : `http://localhost:5050/api/v1/users/updateMe`;
-
-    console.log('url from updateUserData client-side handler ===> ', url);
+      ? `/api/v1/users/updatePassword`
+      : `/api/v1/users/updateMe`;
 
     const res = await axios({
       method: 'PATCH',
@@ -144,7 +137,7 @@ const updateUserData = async (data, type) => {
 
     if (res.data.status === 'success') {
       showAlert('success', `${type.toUpperCase()} updated successfully!`);
-      // console.log(res);
+
       location.reload(true);
     }
 
@@ -166,7 +159,6 @@ if (userDataForm) {
     form.append('name', document.getElementById('name').value);
     form.append('email', document.getElementById('email').value);
     form.append('photo', document.getElementById('photo').files[0]);
-    console.log('form-data object from sending form handler ===> ', form);
 
     updateUserData(form, 'data');
   });
@@ -212,9 +204,8 @@ const bookTour = async tourId => {
   try {
     // 1) Get checkout session from API endpoint
     const session = await axios(
-      `http://localhost:5050/api/v1/bookings/checkout-session/${tourId}`
+      `/api/v1/bookings/checkout-session/${tourId}`
     );
-    console.log(session);
     // 2) Create checkout form  + charge credit card
     await stripe.redirectToCheckout({
       sessionId: session.data.session.id

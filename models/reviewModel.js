@@ -80,7 +80,7 @@ reviewSchema.statics.calcAverageRatings = async function(tourId) {
             }
         }
     ]);
-    console.log(stats);
+    // console.log(stats);
 
     await Tour.findByIdAndUpdate(tourId, {
         ratingsAverage: stats.length > 0 ? stats[0].nRating : 4.5,

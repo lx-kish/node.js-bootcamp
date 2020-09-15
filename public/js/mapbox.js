@@ -8,7 +8,7 @@ let locations;
 if (mapBox) {
   locations = JSON.parse(mapBox.dataset.locations);
   // displayMap(locations);
-  console.log(locations);
+  // console.log(locations);
 
   // export const displayMap = locations => {
 

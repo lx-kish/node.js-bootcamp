@@ -50,7 +50,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     });
 
     const url = `${req.protocol}://${req.get('host')}/me`;
-    console.log(url);
+
     await new Email(newUser, url).sendWelcome();
 
     createSendToken(newUser, 201, res);
@@ -58,8 +58,6 @@ exports.signup = catchAsync(async (req, res, next) => {
 
 exports.login = catchAsync(async (req, res, next) => {
     const { email, password } = req.body;
-
-    console.log('req.body from authController.login ===> ', req.body);
 
     // 1) if email and password exist
     if (!email || !password) {
@@ -210,10 +208,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
     // 1) Get user from the collection
-
     const user = await User.findOne(req.user._id).select('+password');
-
-    console.log(user.password, req.body.passwordCurrent);
 
     // 2) Check if posted password is correct
     if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
