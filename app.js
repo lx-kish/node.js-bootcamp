@@ -8,6 +8,7 @@ const xss = require('xss-clean');
 const hpp = require('hpp');
 const cookieParser = require('cookie-parser');
 const compression = require('compression');
+const cors = require('cors');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -25,6 +26,41 @@ app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, './views'));
 
 // GLOBAL MIDDLEWARES
+
+/**
+ * Implementing CORS - Cross Origin Resource Sharring
+ * CORS limiting cross-origin requests. Only browsers (front-end)
+ * requests are limited, server requests not limited by CORS.
+ * 
+ * It's all about request's headers
+ * 
+ * In common case it's just adding common header:
+ * Access-Control-Allow-Origin *
+ * by adding middleware:
+ * app.use(cors());
+ * Which is allow any requests from any origins (web-browsers)
+ * 
+ * It's possible to limit applying CORS to specific routes just including
+ * cors() as a middleware to the route
+ * 
+ * It's possible to limit allowing of requests by some specific resources:
+ * app.use(cors({
+ *  origin: '<front-end host, like https://www.example.com>'
+ * }))
+ * 
+ * If request is not simple (GET or POST), browser, before sending a request
+ * sends a 'preflight' to the server, and sends the request only after server
+ * responds on the 'preflight'. It calls the 'preflight phase'.
+ * Preflight phase is just a request with specific OPTIONS http method:
+ * 
+ * app.options(<routes>, cors()),
+ * 
+ * where <routes> might be '*' for all routes, or '/specific/:route/'
+ * 
+ */
+app.use(cors());
+app.options('*', cors());
+
 
 // Serving static files
 // app.use(express.static(`${__dirname}/public`));
