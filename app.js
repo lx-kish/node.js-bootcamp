@@ -29,8 +29,8 @@ app.set('views', path.join(__dirname, './views'));
 
 /**
  * Implementing CORS - Cross Origin Resource Sharring
- * CORS limiting cross-origin requests. Only browsers (front-end)
- * requests are limited, server requests not limited by CORS.
+ * CORS is limiting cross-origin requests. Only browsers (front-end)
+ * requests are limited, server requests are not limited by CORS.
  * 
  * It's all about request's headers
  * 
@@ -67,7 +67,7 @@ app.options('*', cors());
 app.use(express.static(path.join(__dirname, 'public')));
 
 //SEt security HTTP headers
-// app.use(helmet());
+app.use(helmet());
 
 // Development logging
 if (process.env.NODE_ENV === 'development') {

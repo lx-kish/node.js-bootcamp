@@ -7,12 +7,31 @@ const Review = require('../../models/reviewModel');
 
 dotenv.config({ path: './config.env' });
 
-mongoose.connect(process.env.DATABASE_LOCAL, {
+// mongoose.connect(process.env.DATABASE_LOCAL, {
+//     useNewUrlParser: true,
+//     useCreateIndex: true,
+//     useFindAndModify: true,
+//     useUnifiedTopology: true
+// }).then(() => console.log('DB connection successfully established'));
+const dbConnectionOptions = {
     useNewUrlParser: true,
     useCreateIndex: true,
-    useFindAndModify: true,
+    useFindAndModify: false,
     useUnifiedTopology: true
-}).then(() => console.log('DB connection successfully established'));
+};
+
+if (process.env.DATABASE_CONNECTION === 'local') {
+    mongoose.connect(process.env.DATABASE_LOCAL, dbConnectionOptions)
+    .then(() => console.log('DB connection to local DB successfully established'));
+} else {
+    const DB = process.env.DATABASE_ATLAS.replace(
+        '<PASSWORD>',
+        process.env.DATABASE_ATLAS_PASSWORD
+    );
+
+    mongoose.connect(DB, dbConnectionOptions)
+    .then(() => console.log('DB connection to Atlas service successfully established'));
+}
 
 //read JSON file
 const tours = JSON.parse(fs.readFileSync(`${__dirname}/tours.json`, 'utf-8'));
