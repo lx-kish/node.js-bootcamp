@@ -10,12 +10,25 @@ process.on('uncaughtException', err => {
 dotenv.config({ path: './config.env' });
 const app = require('./app');
 
-mongoose.connect(process.env.DATABASE_LOCAL, {
+const dbConnectionOptions = {
     useNewUrlParser: true,
     useCreateIndex: true,
     useFindAndModify: false,
     useUnifiedTopology: true
-}).then(() => console.log('DB connection successfully established'));
+};
+
+if (process.env.DATABASE_CONNECTION === 'local') {
+    mongoose.connect(process.env.DATABASE_LOCAL, dbConnectionOptions)
+    .then(() => console.log('DB connection to local DB successfully established'));
+} else {
+    const DB = process.env.DATABASE_ATLAS.replace(
+        '<PASSWORD>',
+        process.env.DATABASE_ATLAS_PASSWORD
+    );
+
+    mongoose.connect(DB, dbConnectionOptions)
+    .then(() => console.log('DB connection to Atlas service successfully established'));
+}
 
 const port = process.env.PORT || 5050;
 const server = app.listen(port, () => {
@@ -33,7 +46,7 @@ process.on('unhandledRejection', err => {
 
 process.on('SIGTERM', () => {
     console.log('SIGTERM RECEIVED. Shutting down gracefully');
-   server.close(() => {
-    console.log('Process terminated.');
-   });
+    server.close(() => {
+        console.log('Process terminated.');
+    });
 });
